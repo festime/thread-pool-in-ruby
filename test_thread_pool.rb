@@ -36,4 +36,44 @@ class TestThreadPool < Minitest::Test
     # 應該照數字從小到大的順序跑
     assert_equal(1.upto(pool_size * 3).to_a, results)
   end
+
+  def test_time_taken
+    pool_size = 5
+    pool = ThreadPool.new(size: pool_size)
+    elapsed = time_taken do
+      pool_size.times do
+        pool.schedule { sleep 1 }
+      end
+      pool.shutdown
+    end
+
+    # 如果 ThreadPool instance 裡面的 theads
+    # 真的有平行執行的話
+    # 那上述
+    #
+    # pool_size.times do
+      # pool.schedule { sleep 1 }
+    # end
+    # pool.shutdown
+    #
+    # 這段 code 執行時間應該會小於 4.5 秒
+    # 反之如果沒有平行執行
+    # 那整個執行時間應該會是 5 秒左右或超過
+    assert_operator 4.5, :>, elapsed,
+      'Elapsed time was too long: %.1f seconds' % elapsed
+  end
+
+  private
+
+  # 自己寫一個 helper
+  # 用於測量呼叫這個方法時夾帶的 block
+  # 裡面的 code 執行時間
+  def time_taken
+    now = Time.now.to_f
+
+    # 去執行外部呼叫 time_taken 時夾帶的 block 內容
+    yield
+
+    Time.now.to_f - now
+  end
 end
