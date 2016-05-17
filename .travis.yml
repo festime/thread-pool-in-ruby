@@ -5,4 +5,4 @@ install:
   - gem install rubocop
 script:
   - ruby ./test_thread_pool.rb
-  - bundle exec rubocop
+  - rubocop
